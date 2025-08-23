@@ -21,7 +21,7 @@ class DataValidation:
                 for col in all_cols:
                     if col not in all_schema:
                         validation_status = False
-                        f.write(f"Validation status for '{col}' : {validation_status}, Column {col} was not found\n")
+                        f.write(f"Validation status for '{col}' : {validation_status}\n")
                     else:
                         validation_status = True
                         f.write(f"Validation status for '{col}' : {validation_status}\n")
