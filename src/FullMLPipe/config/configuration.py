@@ -1,7 +1,8 @@
 from src.FullMLPipe.constants import *
 from src.FullMLPipe.utils.common import read_yaml, create_directories
 from src.FullMLPipe.entity.config_entity import *
-
+from dotenv import load_dotenv
+import os
 class ConfigurationManager:
     def __init__(self,
                  config_filepath = CONFIG_FILE_PATH,
@@ -70,3 +71,36 @@ class ConfigurationManager:
         )
         
         return model_trainer_config
+    
+    def get_secret(self) -> SecretConfig:
+        
+        load_dotenv()
+        
+        return SecretConfig(
+            mlflow_uri= os.getenv("MLFLOW_TRACKING_URI"),
+            mlflow_username= os.getenv('MLFLOW_TRACKING_USERNAME'),
+            mlflow_password= os.getenv('MLFLOW_TRACKING_PASSWORD')
+        )
+    
+    def get_model_evaluation_config(self) -> ModelEvaluationConfig:
+        config = self.config.model_evaluation
+        params = self.params.ElasticNet
+        target = self.schema.TARGET_COLUMN
+        secrets = self.get_secret()
+        
+        os.environ["MLFLOW_TRACKING_URI"] = secrets.mlflow_uri
+        os.environ["MLFLOW_TRACKING_USERNAME"] = secrets.mlflow_username
+        os.environ["MLFLOW_TRACKING_PASSWORD"] = secrets.mlflow_password
+        
+        create_directories([config.root_dir])
+        
+        return ModelEvaluationConfig(
+            root_dir= config.root_dir,
+            test_data_path= config.test_data_path,
+            model_path= config.model_path,
+            all_params= params,
+            metric_file_name= config.metric_file_name,
+            target_column= target.name,
+            mlflow_uri= secrets.mlflow_uri
+        )
+        
